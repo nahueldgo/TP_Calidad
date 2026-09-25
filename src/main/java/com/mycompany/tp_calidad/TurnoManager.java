@@ -3,39 +3,40 @@ package com.mycompany.tp_calidad;
 import java.util.ArrayList;
 import java.util.List;
 
-// VERSION ORIGINAL (codigo de baja calidad), tomada del TP "Calidad de Diseno y Construccion"
 public class TurnoManager {
-    private List<String> turnos = new ArrayList<>();
 
-    public void procesar(
-            String nombrePaciente,
-            int edad,
-            String obraSocial,
-            boolean urgente) {
-        if (nombrePaciente != null && !nombrePaciente.equals("")) {
-            if (edad > 0) {
-                if (obraSocial.equals("OSDE")) {
-                    System.out.println("Paciente premium");
-                } else if (obraSocial.equals("SWISS")) {
-                    System.out.println("Paciente premium");
-                } else if (obraSocial.equals("PUBLICA")) {
-                    System.out.println("Paciente publico");
-                }
-                String turno = nombrePaciente + "-"
-                        + edad + "-"
-                        + obraSocial;
-                if (urgente == true) {
-                    turno = turno + "-URGENTE";
-                }
-                turnos.add(turno);
-                System.out.println("Turno agregado");
-            }
+    private final List<String> turnos = new ArrayList<>();
+
+    public boolean registrarTurno(String nombrePaciente, int edad, String obraSocial, boolean urgente) {
+        if (!datosPacienteValidos(nombrePaciente, edad)) {
+            return false;
         }
+        turnos.add(construirTurno(nombrePaciente, edad, obraSocial, urgente));
+        return true;
     }
 
-    public void mostrar() {
-        for (int i = 0; i < turnos.size(); i++) {
-            System.out.println(turnos.get(i));
+    public boolean datosPacienteValidos(String nombrePaciente, int edad) {
+        return nombrePaciente != null && !nombrePaciente.isEmpty() && edad > 0;
+    }
+
+    public String obtenerCategoria(String obraSocial) {
+        if ("OSDE".equals(obraSocial) || "SWISS".equals(obraSocial)) {
+            return "PREMIUM";
+        } else if ("PUBLICA".equals(obraSocial)) {
+            return "PUBLICO";
         }
+        return "SIN_CATEGORIA";
+    }
+
+    public String construirTurno(String nombrePaciente, int edad, String obraSocial, boolean urgente) {
+        String turno = nombrePaciente + "-" + edad + "-" + obraSocial;
+        if (urgente) {
+            turno = turno + "-URGENTE";
+        }
+        return turno;
+    }
+
+    public List<String> getTurnos() {
+        return new ArrayList<>(turnos);
     }
 }

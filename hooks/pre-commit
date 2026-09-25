@@ -1,0 +1,53 @@
+#!/bin/sh
+# ==============================================================
+#  PRE-COMMIT HOOK - TP Calidad
+#  Se ejecuta automaticamente antes de cada commit.
+#  Corre en orden y de forma obligatoria:
+#    1) Formatter (Spotless)   2) Linter (Checkstyle)   3) Pruebas (JUnit + JaCoCo)
+#  Si cualquier control falla, el script termina con "exit 1"
+#  y Git CANCELA el commit.
+# ==============================================================
+
+export JAVA_HOME="/c/Program Files/Apache NetBeans/jdk"
+MVN="/c/Program Files/Apache NetBeans/java/maven/bin/mvn"
+
+echo ""
+echo "=============================================="
+echo "  PRE-COMMIT: auditoria de calidad"
+echo "=============================================="
+
+echo ""
+echo "[1/3] Formatter (Spotless)..."
+if ! "$MVN" -q --no-transfer-progress spotless:check; then
+    echo ""
+    echo ">>> COMMIT RECHAZADO en el paso 1/3: el codigo no respeta el formato del equipo."
+    echo ">>> Solucion: ejecutar 'mvn spotless:apply' y volver a intentar el commit."
+    exit 1
+fi
+echo "      OK - formato correcto"
+
+echo ""
+echo "[2/3] Linter (Checkstyle)..."
+if ! "$MVN" -q --no-transfer-progress checkstyle:check; then
+    echo ""
+    echo ">>> COMMIT RECHAZADO en el paso 2/3: el linter detecto errores de estilo."
+    echo ">>> Solucion: corregir las lineas indicadas arriba y volver a intentar."
+    exit 1
+fi
+echo "      OK - 0 errores de estilo"
+
+echo ""
+echo "[3/3] Pruebas unitarias (JUnit + JaCoCo)..."
+if ! "$MVN" --no-transfer-progress test; then
+    echo ""
+    echo ">>> COMMIT RECHAZADO en el paso 3/3: hay pruebas que fallan."
+    echo ">>> Solucion: revisar las pruebas indicadas arriba y corregir el codigo."
+    exit 1
+fi
+echo "      OK - todas las pruebas pasan"
+
+echo ""
+echo "=============================================="
+echo "  TODOS LOS CONTROLES PASARON: commit autorizado"
+echo "=============================================="
+exit 0
